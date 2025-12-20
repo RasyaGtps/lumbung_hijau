@@ -278,6 +278,7 @@ class _AdminScreenState extends State<AdminScreen> {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           'Hello, $userName',
@@ -288,7 +289,7 @@ class _AdminScreenState extends State<AdminScreen> {
                             color: Colors.black87,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 2),

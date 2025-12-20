@@ -103,11 +103,59 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   String _formatTime(String? dateStr) {
     if (dateStr == null) return '';
     try {
-      final date = DateTime.parse(dateStr);
+      final date = DateTime.parse(dateStr).toLocal();
       return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } catch (e) {
       return '';
     }
+  }
+
+  String _formatDateSeparator(String? dateStr) {
+    if (dateStr == null) return '';
+    try {
+      final date = DateTime.parse(dateStr).toLocal();
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+      final msgDate = DateTime(date.year, date.month, date.day);
+      
+      if (msgDate == today) {
+        return 'Hari ini';
+      } else if (msgDate == yesterday) {
+        return 'Kemarin';
+      } else {
+        return '${date.day} ${_getMonthName(date.month)} ${date.year}';
+      }
+    } catch (e) {
+      return '';
+    }
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    return months[month - 1];
+  }
+
+  String _getDateKey(String? dateStr) {
+    if (dateStr == null) return '';
+    try {
+      final date = DateTime.parse(dateStr).toLocal();
+      return '${date.year}-${date.month}-${date.day}';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  bool _shouldShowDateSeparator(int index) {
+    if (index == 0) return true;
+    
+    final currentDateKey = _getDateKey(_messages[index]['created_at']);
+    final prevDateKey = _getDateKey(_messages[index - 1]['created_at']);
+    
+    return currentDateKey != prevDateKey;
   }
 
   @override
@@ -168,7 +216,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                         itemCount: _messages.length,
                         itemBuilder: (context, index) {
                           final msg = _messages[index];
-                          return _buildMessageBubble(msg);
+                          final showDateSeparator = _shouldShowDateSeparator(index);
+                          
+                          return Column(
+                            children: [
+                              if (showDateSeparator) _buildDateSeparator(msg['created_at']),
+                              _buildMessageBubble(msg),
+                            ],
+                          );
                         },
                       ),
           ),
@@ -236,6 +291,30 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateSeparator(String? dateStr) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        children: [
+          Expanded(child: Divider(color: Colors.grey[300])),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              _formatDateSeparator(dateStr),
+              style: TextStyle(
+                fontFamily: 'PlusJakartaSans',
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[500],
+              ),
+            ),
+          ),
+          Expanded(child: Divider(color: Colors.grey[300])),
         ],
       ),
     );

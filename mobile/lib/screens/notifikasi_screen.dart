@@ -34,7 +34,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   String _formatDate(String? dateStr) {
     if (dateStr == null) return '';
     try {
-      final date = DateTime.parse(dateStr);
+      final date = DateTime.parse(dateStr).toLocal();
       return '${date.day} ${_getMonthName(date.month)}';
     } catch (e) {
       return '';

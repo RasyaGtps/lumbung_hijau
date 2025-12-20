@@ -20,5 +20,8 @@ type ChatMessage struct {
 
 func (m *ChatMessage) BeforeCreate(tx *gorm.DB) error {
 	m.ID = uuid.New()
+	// Set timezone to Jakarta (WIB/UTC+7)
+	loc, _ := time.LoadLocation("Asia/Jakarta")
+	m.CreatedAt = time.Now().In(loc)
 	return nil
 }

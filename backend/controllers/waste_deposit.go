@@ -170,6 +170,13 @@ func GetAllDeposits(c *gin.Context) {
 func UpdateDepositStatus(c *gin.Context) {
 	depositID := c.Param("id")
 
+	// Get admin user ID from context
+	adminUserID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	var input struct {
 		Status string   `json:"status"`
 		Weight *float64 `json:"weight"`
@@ -207,12 +214,22 @@ func UpdateDepositStatus(c *gin.Context) {
 	if input.Status != "" && input.Status != oldStatus {
 		deposit.Status = input.Status
 		
+		// Set picker info when status changes to "proses"
+		if input.Status == "proses" {
+			adminID := adminUserID.(uuid.UUID)
+			deposit.PickerID = &adminID
+			var adminUser models.User
+			if err := config.DB.Where("id = ?", adminID).First(&adminUser).Error; err == nil {
+				deposit.PickerName = adminUser.Name
+			}
+		}
+		
 		// Create notification for status change
 		var title, message string
 		switch input.Status {
 		case "proses":
 			title = "Penyetoran Sedang Diproses"
-			message = fmt.Sprintf("Sampah %s %d tong sedang dalam proses penjemputan", deposit.WasteType, deposit.BinCount)
+			message = fmt.Sprintf("Sampah %s %d tong sedang dalam proses penjemputan oleh %s", deposit.WasteType, deposit.BinCount, deposit.PickerName)
 		case "completed":
 			title = "Penyaluran Berhasil"
 			message = fmt.Sprintf("Sampah %s %d tong telah selesai diproses", deposit.WasteType, deposit.BinCount)

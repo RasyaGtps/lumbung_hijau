@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/deposit_service.dart';
+import 'chat_room_screen.dart';
 
 class PenjemputanScreen extends StatefulWidget {
   final String depositId;
@@ -30,7 +31,6 @@ class _PenjemputanScreenState extends State<PenjemputanScreen> {
       setState(() {
         if (result['success']) {
           _deposit = result['deposit'];
-          // Debug: print photo_proof value
           debugPrint('photo_proof: ${_deposit?['photo_proof']}');
         }
         _isLoading = false;
@@ -92,6 +92,12 @@ class _PenjemputanScreenState extends State<PenjemputanScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Picker Info - tampil jika status proses atau completed
+                      if (_deposit!['picker_name'] != null && 
+                          _deposit!['picker_name'].toString().isNotEmpty &&
+                          (_deposit!['status'] == 'proses' || _deposit!['status'] == 'completed'))
+                        _buildPickerCard(),
+                      
                       // Step Tracker
                       _buildStepTracker(),
                       const SizedBox(height: 32),
@@ -181,6 +187,96 @@ class _PenjemputanScreenState extends State<PenjemputanScreen> {
           Icon(Icons.image_outlined, size: 40, color: Colors.grey[400]),
           const SizedBox(height: 8),
           Text('Tidak ada foto', style: TextStyle(color: Colors.grey[500], fontFamily: 'PlusJakartaSans')),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPickerCard() {
+    final pickerName = _deposit!['picker_name'] ?? '';
+    final pickerId = _deposit!['picker_id'] as String?;
+    
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: Colors.grey[200],
+            child: Icon(Icons.person, size: 32, color: Colors.grey[400]),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tim Lumbung Hijau',
+                  style: TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey[500],
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  pickerName,
+                  style: const TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (pickerId != null && pickerId.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatRoomScreen(
+                      otherUserId: pickerId,
+                      otherUserName: pickerName,
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'Chat',
+                  style: TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

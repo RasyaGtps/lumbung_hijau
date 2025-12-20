@@ -4,12 +4,14 @@ import (
 	"backend-api/config"
 	"backend-api/models"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
-// GetChatList returns list of users that current user has chatted with
+var jakartaLoc, _ = time.LoadLocation("Asia/Jakarta")
+
 func GetChatList(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {
@@ -61,7 +63,7 @@ func GetChatList(c *gin.Context) {
 				UserName:    user.Name,
 				SchoolName:  user.SchoolName,
 				LastMessage: lastMsg.Message,
-				LastTime:    lastMsg.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+				LastTime:    lastMsg.CreatedAt.In(jakartaLoc).Format("2006-01-02T15:04:05+07:00"),
 				UnreadCount: unreadCount,
 			})
 		}
@@ -93,7 +95,7 @@ func GetChatList(c *gin.Context) {
 					UserName:    "Admin",
 					SchoolName:  "",
 					LastMessage: lastMsg.Message,
-					LastTime:    lastMsg.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+					LastTime:    lastMsg.CreatedAt.In(jakartaLoc).Format("2006-01-02T15:04:05+07:00"),
 					UnreadCount: unreadCount,
 				})
 			}

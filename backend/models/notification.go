@@ -21,5 +21,8 @@ type Notification struct {
 
 func (n *Notification) BeforeCreate(tx *gorm.DB) error {
 	n.ID = uuid.New()
+	// Set timezone to Jakarta (WIB/UTC+7)
+	loc, _ := time.LoadLocation("Asia/Jakarta")
+	n.CreatedAt = time.Now().In(loc)
 	return nil
 }
